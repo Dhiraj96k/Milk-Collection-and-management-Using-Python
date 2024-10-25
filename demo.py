@@ -20,7 +20,7 @@ header_frame = tk.Frame(root, bd=5, relief=tk.RAISED, bg="#4CAF50")
 header_frame.pack(fill=tk.X, pady=10)
 
 # Load and place the image on the left
-image = Image.open("BG_logo.jpg")
+image = Image.open("cow-img.jpeg")
 image = image.resize((80, 80), Image.Resampling.LANCZOS)  # Resize image to fit next to label
 photo = ImageTk.PhotoImage(image)
 
