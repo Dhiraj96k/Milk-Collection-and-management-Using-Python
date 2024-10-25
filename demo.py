@@ -1,88 +1,104 @@
 import tkinter as tk
-from PIL import Image, ImageTk
+from tkinter import messagebox
+import sqlite3 as sq
 
-# Create the main application window
+# Function to handle login
+def login():
+    # Get the input values
+    username = entry_username.get()
+    password = entry_password.get()
+
+    # Step 1: Connect to the database
+    conn = sq.connect('project_database.db')
+    
+    # Step 2: Create a cursor object
+    cursor = conn.cursor()
+    
+    # Step 3: Query the database to match the username and password
+    cursor.execute('''
+    SELECT * FROM admin WHERE username = ? AND password = ?
+    ''', (username, password))
+    
+    # Step 4: Fetch the result
+    result = cursor.fetchone()  # This will return None if no match is found
+    
+    # Step 5: Verify if a match was found
+    if result:
+        messagebox.showinfo("Login", "Login Successful!")
+    else:
+        messagebox.showerror("Login", "Invalid Username or Password")
+
+    # Step 6: Close the connection
+    conn.close()
+
+# Hover effect function for buttons
+def on_enter(e):
+    e.widget['background'] = '#000'
+
+def on_leave(e):
+    e.widget['background'] = '#a525cc'
+
+# Create the main window
 root = tk.Tk()
-root.title("Milk Collection and Management")
+root.title("Login to Administration")
 
-# Automatically detect screen width and height
+# Get the screen width and height for dynamic sizing
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
-window_width = int(screen_width)
-window_height = int(screen_height)
 
-# Set the size of the window
-root.geometry(f"{window_width}x{window_height}")
-root.config(bg="#f0f0f0")  # Set background color of the root window
+# Set the window size to 40% of screen width and 50% of screen height
+max_width = int(screen_width * 0.4)  
+max_height = int(screen_height * 0.5)  
+root.geometry(f"{max_width}x{max_height}")
+root.configure(bg="#f0f4f7")  # Light gray-blue background
 
-# Create a frame for the header (which contains the image and the label)
-header_frame = tk.Frame(root, bd=5, relief=tk.RAISED, bg="#4CAF50")
-header_frame.pack(fill=tk.X, pady=10)
+# Frame to hold the form elements with rounded corners, shadow, and padding
+frame = tk.Frame(root, bg="#ffffff", bd=4, relief="groove", padx=20, pady=20)
+frame.place(relx=0.5, rely=0.5, anchor="center", width=340, height=400)
 
-# Load and place the image on the left
-image = Image.open("cow-img.jpeg")
-image = image.resize((80, 80), Image.Resampling.LANCZOS)  # Resize image to fit next to label
-photo = ImageTk.PhotoImage(image)
+# Title label with enhanced styling
+label_title = tk.Label(frame, text="Login To Admin", bg="#ffffff", fg="#333", 
+                       font=("Helvetica", 20, "bold"), padx=10, pady=10)
+label_title.pack(pady=10)
 
-# Create a frame for the image and label to center them
-center_frame = tk.Frame(header_frame, bg="#4CAF50")
-center_frame.pack(side=tk.TOP, padx=20, pady=10)
+# Username label with updated font and color
+label_username = tk.Label(frame, text="Username", bg="#ffffff", fg="#555555", 
+                          font=("Arial", 12, "bold"))
+label_username.pack(pady=(5, 2))
 
-# Add the image
-image_label = tk.Label(center_frame, image=photo, bg="#4CAF50")
-image_label.pack(side=tk.LEFT)
+# Username entry field with padding and border
+entry_username = tk.Entry(frame, width=30, bd=2, relief="solid", font=("Arial", 12))
+entry_username.pack(pady=5)
 
-# Create the title label next to the image
-header_label = tk.Label(center_frame, text="Milk Collection and Management", 
-                        font=("Arial", 30, "bold"), fg="white", bg="#4CAF50")
-header_label.pack(side=tk.LEFT, padx=20)
+# Password label with updated font and color
+label_password = tk.Label(frame, text="Password", bg="#ffffff", fg="#555555", 
+                          font=("Arial", 12, "bold"))
+label_password.pack(pady=(5, 2))
 
-# Create two frames to divide the screen into Admin and User login sections
-left_frame = tk.Frame(root, width=window_width//2, height=window_height, bd=5, relief=tk.GROOVE, bg="#e0f7fa")
-left_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=10, pady=10)
+# Password entry field with asterisks and padding
+entry_password = tk.Entry(frame, width=30, bd=2, relief="solid", font=("Arial", 12), show="*")
+entry_password.pack(pady=5)
 
-right_frame = tk.Frame(root, width=window_width//2, height=window_height, bd=5, relief=tk.GROOVE, bg="#ffe0b2")
-right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True, padx=10, pady=10)
+# Forgot details link with blue text, underlined style, and cursor hover effect
+forgot_label = tk.Label(frame, text="Forgot details?", bg="#ffffff", fg="#007bff", 
+                        cursor="hand2", font=("Arial", 10, "underline"))
+forgot_label.pack(pady=5)
 
-# --- Admin Login Section ---
-admin_label = tk.Label(left_frame, text="Admin Login", font=("Arial", 24, "bold"), bg="#e0f7fa", fg="#004d40")
-admin_label.pack(pady=30)
+# Remember me checkbox with styled text
+remember_var = tk.IntVar()  # Define the remember_var here
+remember_check = tk.Checkbutton(frame, text="Remember me", variable=remember_var, 
+                                bg="#ffffff", font=("Arial", 10), fg="#333333")
+remember_check.pack(pady=(5, 10))
 
-# Username label and entry
-admin_username_label = tk.Label(left_frame, text="Username", font=("Arial", 16), bg="#e0f7fa")
-admin_username_label.pack(pady=10)
-admin_username_entry = tk.Entry(left_frame, font=("Arial", 16), bd=3)
-admin_username_entry.pack(pady=10)
+# Sign-in button with hover effect, padding, and styling
+sign_in_button = tk.Button(frame, text="Sign In", command=login, bg="#a525cc", fg="white", 
+                           width=14, height=2, font=("Arial", 12, "bold"), bd=0, relief="flat", cursor="hand2")
+sign_in_button.pack(pady=15)
 
-# Password label and entry
-admin_password_label = tk.Label(left_frame, text="Password", font=("Arial", 16), bg="#e0f7fa")
-admin_password_label.pack(pady=10)
-admin_password_entry = tk.Entry(left_frame, font=("Arial", 16), bd=3, show="*")
-admin_password_entry.pack(pady=10)
+# Adding hover effects to buttons
+sign_in_button.bind("<Enter>", on_enter)
+sign_in_button.bind("<Leave>", on_leave)
 
-# Admin Login button
-admin_login_button = tk.Button(left_frame, text="Login", font=("Arial", 16, "bold"), bg="#009688", fg="white", bd=3)
-admin_login_button.pack(pady=30)
 
-# --- User Login Section ---
-user_label = tk.Label(right_frame, text="User Login", font=("Arial", 24, "bold"), bg="#ffe0b2", fg="#bf360c")
-user_label.pack(pady=30)
-
-# Mobile number label and entry
-user_mobile_label = tk.Label(right_frame, text="Mobile Number", font=("Arial", 16), bg="#ffe0b2")
-user_mobile_label.pack(pady=10)
-user_mobile_entry = tk.Entry(right_frame, font=("Arial", 16), bd=3)
-user_mobile_entry.pack(pady=10)
-
-# Code label and entry
-user_code_label = tk.Label(right_frame, text="Code", font=("Arial", 16), bg="#ffe0b2")
-user_code_label.pack(pady=10)
-user_code_entry = tk.Entry(right_frame, font=("Arial", 16), bd=3)
-user_code_entry.pack(pady=10)
-
-# User Login button
-user_login_button = tk.Button(right_frame, text="Login", font=("Arial", 16, "bold"), bg="#FF5722", fg="white", bd=3)
-user_login_button.pack(pady=30)
-
-# Start the Tkinter event loop
+# Run the application
 root.mainloop()
