@@ -40,15 +40,17 @@ def on_leave(e):
 
 # Create the main window
 root = tk.Tk()
-root.title("Login to Administration")
+root.title("Login to Admin")
+# icon = tk.PhotoImage(file="")
+# root.iconphoto(True, icon)
 
 # Get the screen width and height for dynamic sizing
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
 
 # Set the window size to 40% of screen width and 50% of screen height
-max_width = int(screen_width * 0.4)  
-max_height = int(screen_height * 0.5)  
+max_width = int(screen_width)  
+max_height = int(screen_height)  
 root.geometry(f"{max_width}x{max_height}")
 root.configure(bg="#f0f4f7")  # Light gray-blue background
 
@@ -80,7 +82,7 @@ entry_password = tk.Entry(frame, width=30, bd=2, relief="solid", font=("Arial", 
 entry_password.pack(pady=5)
 
 # Forgot details link with blue text, underlined style, and cursor hover effect
-forgot_label = tk.Label(frame, text="Forgot details?", bg="#ffffff", fg="#007bff", 
+forgot_label = tk.Label(frame, text="I Am Farmer", bg="#ffffff", fg="#007bff", 
                         cursor="hand2", font=("Arial", 10, "underline"))
 forgot_label.pack(pady=5)
 
