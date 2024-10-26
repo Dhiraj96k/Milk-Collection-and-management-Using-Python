@@ -6,7 +6,6 @@ from PIL import Image, ImageTk
 def farmer_login():
     farmer = tk.Frame(root)
     
-
 # Function to handle login
 def login():
     # Get the input values
