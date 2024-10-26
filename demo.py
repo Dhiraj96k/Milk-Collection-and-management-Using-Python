@@ -4,8 +4,21 @@ import sqlite3 as sq
 from PIL import Image, ImageTk
 
 def farmer_login():
-    farmer = tk.Frame(root)
-    
+    root.destroy()
+
+    # Open a new window for the farmer login
+    farmer = tk.Tk()
+    farmer.title("Farmer Login")
+    # Get the screen width and height for dynamic sizing
+    screen_width = farmer.winfo_screenwidth()
+    screen_height = farmer.winfo_screenheight()
+
+    # Set the window size to 40% of screen width and 50% of screen height
+    max_width = int(screen_width)  
+    max_height = int(screen_height)  
+    farmer.geometry(f"{max_width}x{max_height}")
+    farmer.configure(bg="#f0f4f7")
+        
 # Function to handle login
 def login():
     # Get the input values
@@ -86,9 +99,10 @@ entry_password = tk.Entry(frame, width=30, bd=2, relief="solid", font=("Arial", 
 entry_password.pack(pady=5)
 
 # Forgot details link with blue text, underlined style, and cursor hover effect
-forgot_label = tk.Label(frame, text="I Am Farmer", bg="#ffffff", fg="#007bff", 
-                        cursor="hand2", font=("Arial", 10, "underline"),command=farmer_login())
-forgot_label.pack(pady=5)
+forgot_button = tk.Button(frame, text="I Am Farmer", bg="#ffffff", fg="#007bff",
+                          cursor="hand2", font=("Arial", 10, "underline"),
+                          command=farmer_login, borderwidth=0)
+forgot_button.pack(pady=5)
 
 # Remember me checkbox with styled text
 remember_var = tk.IntVar()  # Define the remember_var here
