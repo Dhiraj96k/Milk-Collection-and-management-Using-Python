@@ -1,6 +1,11 @@
 import tkinter as tk
 from tkinter import messagebox
 import sqlite3 as sq
+from PIL import Image, ImageTk
+
+def farmer_login():
+    farmer = tk.Frame(root)
+    
 
 # Function to handle login
 def login():
@@ -41,8 +46,8 @@ def on_leave(e):
 # Create the main window
 root = tk.Tk()
 root.title("Login to Admin")
-# icon = tk.PhotoImage(file="")
-# root.iconphoto(True, icon)
+icon = ImageTk.PhotoImage(Image.open("cow-img.jpeg"))
+root.iconphoto(True, icon)
 
 # Get the screen width and height for dynamic sizing
 screen_width = root.winfo_screenwidth()
@@ -83,7 +88,7 @@ entry_password.pack(pady=5)
 
 # Forgot details link with blue text, underlined style, and cursor hover effect
 forgot_label = tk.Label(frame, text="I Am Farmer", bg="#ffffff", fg="#007bff", 
-                        cursor="hand2", font=("Arial", 10, "underline"))
+                        cursor="hand2", font=("Arial", 10, "underline"),command=farmer_login())
 forgot_label.pack(pady=5)
 
 # Remember me checkbox with styled text
