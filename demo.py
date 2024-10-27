@@ -3,6 +3,21 @@ from tkinter import messagebox
 import sqlite3 as sq
 from PIL import Image, ImageTk
 
+def main_panel():
+    main = tk.Tk()
+    main.title("Farmer Login")
+    # Get the screen width and height for dynamic sizing
+    screen_width = main.winfo_screenwidth()
+    screen_height = main.winfo_screenheight()
+
+    # Set the window size to 40% of screen width and 50% of screen height
+    max_width = int(screen_width)  
+    max_height = int(screen_height)  
+    main.geometry(f"{max_width}x{max_height}")
+    main.configure(bg="#00ff00")
+    
+    main.mainloop()
+
 def farmer_login():
     root.destroy()
 
@@ -18,6 +33,8 @@ def farmer_login():
     max_height = int(screen_height)  
     farmer.geometry(f"{max_width}x{max_height}")
     farmer.configure(bg="#f0f4f7")
+
+    farmer.mainloop()
         
 # Function to handle login
 def login():
@@ -41,7 +58,8 @@ def login():
     
     # Step 5: Verify if a match was found
     if result:
-        messagebox.showinfo("Login", "Login Successful!")
+        root.destroy()
+        main_panel()
     else:
         messagebox.showerror("Login", "Invalid Username or Password")
 
