@@ -19,14 +19,9 @@ def main_panel():
     
     main.mainloop()
 
+
 def farmer_login():
-    # Destroy the main window
     root.destroy()
-
-    # Predefined OTP for demonstration purposes
-    correct_otp = "123456"
-
-    # Create a new window for farmer login
     farmer = tk.Tk()
     farmer.title("Farmer Login")
 
@@ -69,14 +64,13 @@ def farmer_login():
     otp_entry = tk.Entry(frame, font=entry_font, width=15, bd=1, relief="solid")
     otp_entry.grid(row=3, column=1, sticky="w", padx=5, pady=8)
 
-    # "Send OTP" button with flexible placement
+    # "Send OTP" button positioned within frame
     send_otp_button = tk.Button(
-        frame, text="Send OTP", font=("Helvetica", 10), width=10,
+        frame, text="Send OTP", font=("Helvetica", 10), width=8,
         bg="#007BFF", fg="white", relief="solid", bd=1, cursor="hand2",
         activebackground="#0056b3"
     )
-    # Place the "Send OTP" button next to the OTP entry field; adjust x, y as needed for custom positioning
-    send_otp_button.place(x=330, y=130)  # Adjust x and y for desired position
+    send_otp_button.place(x=270, y=135)  # Adjusted position within the frame bounds
 
     # Email label and entry
     tk.Label(frame, text="Email:", font=label_font, bg="#ffffff").grid(row=4, column=0, sticky="e", padx=10, pady=8)
@@ -85,12 +79,7 @@ def farmer_login():
 
     # Function to verify OTP and handle login
     def verify_login():
-        entered_otp = otp_entry.get()
-        if entered_otp == correct_otp:
-            messagebox.showinfo("Success", "Login successful!")
-            # Code for the next window or dashboard goes here
-        else:
-            messagebox.showerror("Error", "OTP does not match or user not found.")
+        print("helloo")
 
     # Custom-styled Login button
     login_button = tk.Button(
@@ -106,6 +95,7 @@ def farmer_login():
     footer_frame.pack(fill="x", side="bottom")
 
     farmer.mainloop()
+
 
 # Function to handle login
 def login():
