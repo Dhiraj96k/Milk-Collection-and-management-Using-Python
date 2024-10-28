@@ -79,11 +79,8 @@ root.title("Login to Admin")
 icon = ImageTk.PhotoImage(Image.open("cow-img.jpeg"))
 root.iconphoto(True, icon)
 
-# Get the screen width and height for dynamic sizing
 screen_width = root.winfo_screenwidth()
 screen_height = root.winfo_screenheight()
-
-# Set the window size to 40% of screen width and 50% of screen height
 max_width = int(screen_width)  
 max_height = int(screen_height)  
 root.geometry(f"{max_width}x{max_height}")
