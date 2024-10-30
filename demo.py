@@ -3,6 +3,13 @@ from tkinter import messagebox
 from tkinter import font as tkFont
 import sqlite3 as sq
 from PIL import Image, ImageTk
+import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+import random
+from twilio.rest import Client
+import os
+
 
 def main_panel():
     main = tk.Tk()
@@ -20,6 +27,59 @@ def main_panel():
     main.mainloop()
 
 
+# Function to generate a 6-digit OTP
+def generate_otp():
+    return str(random.randint(100000, 999999))
+
+# Function to send an email with the OTP
+def send_email(receiver_email, otp):
+    sender_email = 'dhirajsalunke7350@gmail.com'
+    sender_password = 'cyba jydk cujw swpw'
+    subject = 'Your OTP Code'
+    message = f'Your OTP code is: {otp}'
+    smtp_server = 'smtp.gmail.com'
+    smtp_port = 587
+
+    # Set up the MIME message
+    msg = MIMEMultipart()
+    msg['From'] = sender_email
+    msg['To'] = receiver_email
+    msg['Subject'] = subject
+    msg.attach(MIMEText(message, 'plain'))
+
+    try:
+        # Establish connection to the server
+        server = smtplib.SMTP(smtp_server, smtp_port)
+        server.starttls()
+        server.login(sender_email, sender_password)
+
+        # Send the email
+        server.sendmail(sender_email, receiver_email, msg.as_string())
+        print("Email sent successfully!")
+
+    except Exception as e:
+        print(f"Failed to send email: {e}")
+
+    finally:
+        server.quit()
+
+# Function to send OTP via SMS using Twilio
+def send_sms(mobile_number, otp):
+    account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+    auth_token = '[AuthToken]'  # Replace with your actual auth token
+    client = Client(account_sid, auth_token)
+
+    message_body = f'Your OTP code is: {otp}'
+    try:
+        message = client.messages.create(
+            from_='+12133440687',  # Replace with your Twilio number
+            body=message_body,
+            to=mobile_number
+        )
+        print("SMS sent successfully!")
+    except Exception as e:
+        print(f"Failed to send SMS: {e}")
+
 def farmer_login():
     root.destroy()
     farmer = tk.Tk()
@@ -28,7 +88,6 @@ def farmer_login():
     # Screen dimensions for dynamic sizing
     screen_width = farmer.winfo_screenwidth()
     screen_height = farmer.winfo_screenheight()
-
     # Set window size and position it in the center of the screen
     window_width = int(screen_width * 0.4)
     window_height = int(screen_height * 0.5)
@@ -64,22 +123,45 @@ def farmer_login():
     otp_entry = tk.Entry(frame, font=entry_font, width=15, bd=1, relief="solid")
     otp_entry.grid(row=3, column=1, sticky="w", padx=5, pady=8)
 
-    # "Send OTP" button positioned within frame
-    send_otp_button = tk.Button(
-        frame, text="Send OTP", font=("Helvetica", 10), width=8,
-        bg="#007BFF", fg="white", relief="solid", bd=1, cursor="hand2",
-        activebackground="#0056b3"
-    )
-    send_otp_button.place(x=270, y=135)  # Adjusted position within the frame bounds
-
     # Email label and entry
     tk.Label(frame, text="Email:", font=label_font, bg="#ffffff").grid(row=4, column=0, sticky="e", padx=10, pady=8)
     email_entry = tk.Entry(frame, font=entry_font, width=25, bd=1, relief="solid")
     email_entry.grid(row=4, column=1, columnspan=2, padx=5, pady=8)
 
+    # Variable to store the generated OTP
+    otp_code = None
+
+    # Function to handle OTP generation and sending
+    def send_otp():
+        nonlocal otp_code
+        receiver_email = email_entry.get()
+        mobile_number = mobile_entry.get()
+        
+        if not receiver_email or not mobile_number:
+            messagebox.showwarning("Input Error", "Please enter both email and mobile number.")
+            return
+
+        otp_code = generate_otp()  # Generate a new OTP
+        send_email(receiver_email, otp_code)  # Send the OTP via email
+        send_sms(mobile_number, otp_code)  # Send the OTP via SMS
+        messagebox.showinfo("OTP Sent", "OTP has been sent to your email and mobile number.")
+
+    # "Send OTP" button positioned within frame
+    send_otp_button = tk.Button(
+        frame, text="Send OTP", font=("Helvetica", 10), width=10,
+        bg="#007BFF", fg="white", relief="solid", bd=1, cursor="hand2",
+        activebackground="#0056b3", command=send_otp
+    )
+    send_otp_button.place(x=270, y=135)  # Adjusted position within the frame bounds
+
     # Function to verify OTP and handle login
     def verify_login():
-        print("helloo")
+        entered_otp = otp_entry.get()
+        if entered_otp == otp_code:
+            messagebox.showinfo("Success", "Login successful!")
+            # Code for the next window or dashboard goes here
+        else:
+            messagebox.showerror("Error", "OTP does not match or user not found.")
 
     # Custom-styled Login button
     login_button = tk.Button(
@@ -95,7 +177,6 @@ def farmer_login():
     footer_frame.pack(fill="x", side="bottom")
 
     farmer.mainloop()
-
 
 # Function to handle login
 def login():
@@ -194,7 +275,6 @@ sign_in_button.pack(pady=15)
 # Adding hover effects to buttons
 sign_in_button.bind("<Enter>", on_enter)
 sign_in_button.bind("<Leave>", on_leave)
-
 
 # Run the application
 root.mainloop()
