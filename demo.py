@@ -9,23 +9,12 @@ from email.mime.text import MIMEText
 import random
 from twilio.rest import Client
 import os
+from main_board import *
 
 
 def main_panel():
-    main = tk.Tk()
-    main.title("Farmer Login")
-    # Get the screen width and height for dynamic sizing
-    screen_width = main.winfo_screenwidth()
-    screen_height = main.winfo_screenheight()
-
-    # Set the window size to 40% of screen width and 50% of screen height
-    max_width = int(screen_width)  
-    max_height = int(screen_height)  
-    main.geometry(f"{max_width}x{max_height}")
-    main.configure(bg="#00ff00")
-    
-    main.mainloop()
-
+    create_mainboard()
+    root.destroy()
 
 # Function to generate a 6-digit OTP
 def generate_otp():
@@ -200,7 +189,6 @@ def login():
     
     # Step 5: Verify if a match was found
     if result:
-        root.destroy()
         main_panel()
     else:
         messagebox.showerror("Login", "Invalid Username or Password")
