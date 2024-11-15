@@ -1,7 +1,56 @@
 import tkinter as tk
-from tkinter import ttk
+from tkinter import ttk, messagebox
+import sqlite3
 from datetime import datetime
 
+# Function to fetch details from the database by code
+def fetch_details_by_code(code):
+    """Fetch the name and mobno from per_info based on the code."""
+    # Connect to the database
+    conn = sqlite3.connect('project_database.db')
+    cursor = conn.cursor()
+    
+    # Query the database for the given code
+    cursor.execute("SELECT name, mobno FROM per_info WHERE code = ?", (code,))
+    
+    # Fetch the result
+    result = cursor.fetchone()
+    
+    # Close the connection
+    conn.close()
+    
+    if result:
+        return result  # Return the name and mobno
+    else:
+        return None  # Return None if no record is found
+
+# Event handler for when the code entry field loses focus or Enter is pressed
+def on_code_entry_change(event=None):
+    """Function to handle code entry change event when focus is lost or Enter is pressed."""
+    code = code_entry.get()
+    
+    if code.isdigit():  # Ensure the entered code is a number
+        # Fetch name and mobno from the database based on code
+        result = fetch_details_by_code(int(code))
+        
+        if result:
+            # Update the name and mobno fields with the fetched data
+            name_entry.delete(0, tk.END)
+            name_entry.insert(0, result[0])
+            
+            mobno_entry.delete(0, tk.END)
+            mobno_entry.insert(0, result[1])
+        else:
+            # If no data is found for the entered code, show an error message
+            messagebox.showerror("Error", f"No data found for code: {code}")
+            name_entry.delete(0, tk.END)
+            mobno_entry.delete(0, tk.END)
+    else:
+        # Clear the fields if the code is not a valid number
+        name_entry.delete(0, tk.END)
+        mobno_entry.delete(0, tk.END)
+
+# Function to create the main board (GUI)
 def create_mainboard(root):
     # Set the geometry of the main window to full screen
     screen_width = root.winfo_screenwidth()
@@ -21,60 +70,68 @@ def create_mainboard(root):
     left_frame = tk.Frame(root, padx=20, pady=10)
     left_frame.pack(side="left", fill="y", expand=False)
 
-    name_entry = tk.Entry(left_frame, width=20, font=("Arial", 12))
+    # Code Entry Field
+    tk.Label(left_frame, text="Code", font=("Arial", 12, "bold")).grid(row=0, column=0, pady=5, sticky="w")
+    global code_entry  # Make code_entry global so it can be accessed in other functions
     code_entry = tk.Entry(left_frame, width=20, font=("Arial", 12))
-    mob_entry = tk.Entry(left_frame, width=20, font=("Arial", 12))
+    code_entry.grid(row=0, column=1, pady=5, padx=5)
+    code_entry.bind("<Return>", on_code_entry_change)  # Bind Enter key to call the function
+    
+    # Name Entry Field
+    tk.Label(left_frame, text="Name", font=("Arial", 12, "bold")).grid(row=1, column=0, pady=5, sticky="w")
+    global name_entry  # Make name_entry global
+    name_entry = tk.Entry(left_frame, width=20, font=("Arial", 12))
+    name_entry.grid(row=1, column=1, pady=5, padx=5)
+    
+    # Mobile Number Entry Field
+    tk.Label(left_frame, text="Mob.No", font=("Arial", 12, "bold")).grid(row=2, column=0, pady=5, sticky="w")
+    global mobno_entry  # Make mobno_entry global
+    mobno_entry = tk.Entry(left_frame, width=20, font=("Arial", 12))
+    mobno_entry.grid(row=2, column=1, pady=5, padx=5)
+    
+    # Literature Section
+    tk.Label(left_frame, text="Liter", font=("Arial", 12, "bold")).grid(row=3, column=0, pady=5, sticky="w")
     liter_entry = tk.Entry(left_frame, width=20, font=("Arial", 12), bg="#FFDDDD")
+    liter_entry.grid(row=3, column=1, pady=5, padx=5)
+    
+    # Fat Section
+    tk.Label(left_frame, text="Fat", font=("Arial", 12, "bold")).grid(row=4, column=0, pady=5, sticky="w")
     fat_entry = tk.Entry(left_frame, width=20, font=("Arial", 12), bg="#FFDDDD")
+    fat_entry.grid(row=4, column=1, pady=5, padx=5)
+
+    # SNF Section
+    tk.Label(left_frame, text="SNF", font=("Arial", 12, "bold")).grid(row=5, column=0, pady=5, sticky="w")
     snf_entry = tk.Entry(left_frame, width=20, font=("Arial", 12), bg="#FFDDDD")
+    snf_entry.grid(row=5, column=1, pady=5, padx=5)
+    
+    # Amount Section
+    tk.Label(left_frame, text="Amount", font=("Arial", 12, "bold")).grid(row=6, column=0, pady=5, sticky="w")
     amount_entry = tk.Entry(left_frame, width=20, font=("Arial", 12))
+    amount_entry.grid(row=6, column=1, pady=5, padx=5)
 
-    # Labels and Entry widgets
-    entries = [
-        ("Name", name_entry),
-        ("Code", code_entry),
-        ("Mob.No", mob_entry),
-        ("Liter", liter_entry),
-        ("Fat", fat_entry),
-        ("SNF", snf_entry),
-        ("Amount", amount_entry)
-    ]
-    for i, (label, entry) in enumerate(entries):
-        tk.Label(left_frame, text=label, font=("Arial", 12, "bold")).grid(row=i, column=0, pady=5, sticky="w")
-        entry.grid(row=i, column=1, pady=5, padx=5)
+    # Average Quantity, Fat, SNF, Rate Section
+    tk.Label(left_frame, text="AVG. Qty", font=("Arial", 12, "bold")).grid(row=3, column=2, pady=5, padx=10, sticky="w")
+    avg_qty_entry = tk.Entry(left_frame, width=10, font=("Arial", 12))
+    avg_qty_entry.grid(row=3, column=3, pady=5, padx=5)
 
-    # Additional average and rate section
-    avg_entries = [
-        ("AVG. Qty", "Liter"),
-        ("AVG. Fat", "Fat"),
-        ("AVG. SNF", "SNF"),
-        ("Rate", "Rate")
-    ]
-    for i, (label, entry) in enumerate(avg_entries, start=3):
-        tk.Label(left_frame, text=label, font=("Arial", 12, "bold")).grid(row=i, column=2, pady=5, padx=10, sticky="w")
-        avg_entry = tk.Entry(left_frame, width=10, font=("Arial", 12))
-        avg_entry.grid(row=i, column=3, pady=5, padx=5)
+    tk.Label(left_frame, text="AVG. Fat", font=("Arial", 12, "bold")).grid(row=4, column=2, pady=5, padx=10, sticky="w")
+    avg_fat_entry = tk.Entry(left_frame, width=10, font=("Arial", 12))
+    avg_fat_entry.grid(row=4, column=3, pady=5, padx=5)
+
+    tk.Label(left_frame, text="AVG. SNF", font=("Arial", 12, "bold")).grid(row=5, column=2, pady=5, padx=10, sticky="w")
+    avg_snf_entry = tk.Entry(left_frame, width=10, font=("Arial", 12))
+    avg_snf_entry.grid(row=5, column=3, pady=5, padx=5)
+
+    tk.Label(left_frame, text="Rate", font=("Arial", 12, "bold")).grid(row=6, column=2, pady=5, padx=10, sticky="w")
+    rate_entry = tk.Entry(left_frame, width=10, font=("Arial", 12))
+    rate_entry.grid(row=6, column=3, pady=5, padx=5)
 
     # Button section
-    def on_ok_button_click():
-        # Get data from the entries and insert it into the list table
-        member_data = (name_entry.get(), code_entry.get(), mob_entry.get(), liter_entry.get(), fat_entry.get(), snf_entry.get(), amount_entry.get())
-        list_table.insert("", "end", values=member_data)
-        # Optionally, clear the entries after submitting
-        for entry in [name_entry, code_entry, mob_entry, liter_entry, fat_entry, snf_entry, amount_entry]:
-            entry.delete(0, tk.END)
-
-    def on_setting_button_click():
-        show_settings()
-
-    def on_close_button_click():
-        root.quit()  # Close the application
-
     button_frame = tk.Frame(root, padx=10, pady=10)
     button_frame.pack(side="left", fill="y", expand=False)
-    tk.Button(button_frame, text="OK", font=("Arial", 12, "bold"), width=10, height=2, command=on_ok_button_click).pack(pady=10)
-    tk.Button(button_frame, text="Setting", font=("Arial", 12, "bold"), width=10, height=2, command=on_setting_button_click).pack(pady=10)
-    tk.Button(button_frame, text="Close", font=("Arial", 12, "bold"), width=10, height=2, command=on_close_button_click).pack(pady=10)
+    tk.Button(button_frame, text="OK", font=("Arial", 12, "bold"), width=10, height=2).pack(pady=10)
+    tk.Button(button_frame, text="Setting", font=("Arial", 12, "bold"), width=10, height=2).pack(pady=10)
+    tk.Button(button_frame, text="Close", font=("Arial", 12, "bold"), width=10, height=2, command=root.quit).pack(pady=10)
 
     # Right side - Summary and List
     right_frame = tk.Frame(root, padx=10, pady=10)
@@ -90,24 +147,15 @@ def create_mainboard(root):
         summary_table.column(col, anchor="center", width=100)
     summary_table.pack(fill="x", pady=10)
 
-    # List table with dynamic data population
+    # List table
     list_label = tk.Label(right_frame, text="List", font=("Arial", 14, "bold"))
     list_label.pack(anchor="w")
-    list_columns = ("Name", "Code", "Mob.No", "Liter", "Fat", "SNF", "Amount")
+    list_columns = ("Code", "Liter", "Fat", "SNF", "Rate", "Amount")
     list_table = ttk.Treeview(right_frame, columns=list_columns, show="headings", height=4)
     for col in list_columns:
         list_table.heading(col, text=col)
-        list_table.column(col, anchor="center", width=100)
+        list_table.column(col, anchor="center", width=80)
     list_table.pack(fill="x", pady=10)
-
-    # Add scrollbars to the List table
-    scrollbar_y = tk.Scrollbar(right_frame, orient="vertical", command=list_table.yview)
-    scrollbar_y.pack(side="right", fill="y")
-    list_table.config(yscrollcommand=scrollbar_y.set)
-
-    scrollbar_x = tk.Scrollbar(right_frame, orient="horizontal", command=list_table.xview)
-    scrollbar_x.pack(side="bottom", fill="x")
-    list_table.config(xscrollcommand=scrollbar_x.set)
 
     # Previous Day's Collection table
     prev_day_label = tk.Label(right_frame, text="Previous Day's Milk Collection", font=("Arial", 12, "bold"), bg="#FFCCCC")
@@ -127,13 +175,6 @@ def create_mainboard(root):
 
     # Update time initially
     update_time()
-
-    # Settings Window (Popup)
-    def show_settings():
-        settings_window = tk.Toplevel(root)
-        settings_window.title("Settings")
-        tk.Label(settings_window, text="Adjust your settings here").pack(pady=10)
-        tk.Button(settings_window, text="Close", command=settings_window.destroy).pack(pady=10)
 
 # Initialize and run the main application window
 root = tk.Tk()
