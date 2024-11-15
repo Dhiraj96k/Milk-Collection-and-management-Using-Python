@@ -21,37 +21,60 @@ def create_mainboard(root):
     left_frame = tk.Frame(root, padx=20, pady=10)
     left_frame.pack(side="left", fill="y", expand=False)
 
-    tk.Label(left_frame, text="Name", font=("Arial", 12, "bold")).grid(row=0, column=0, pady=5, sticky="w")
-    tk.Entry(left_frame, width=20, font=("Arial", 12)).grid(row=0, column=1, pady=5, padx=5)
-    tk.Label(left_frame, text="Code", font=("Arial", 12, "bold")).grid(row=1, column=0, pady=5, sticky="w")
-    tk.Entry(left_frame, width=20, font=("Arial", 12)).grid(row=1, column=1, pady=5, padx=5)
-    tk.Label(left_frame, text="Mob.No", font=("Arial", 12, "bold")).grid(row=2, column=0, pady=5, sticky="w")
-    tk.Entry(left_frame, width=20, font=("Arial", 12)).grid(row=2, column=1, pady=5, padx=5)
-    tk.Label(left_frame, text="Liter", font=("Arial", 12, "bold")).grid(row=3, column=0, pady=5, sticky="w")
-    tk.Entry(left_frame, width=20, font=("Arial", 12), bg="#FFDDDD").grid(row=3, column=1, pady=5, padx=5)
-    tk.Label(left_frame, text="Fat", font=("Arial", 12, "bold")).grid(row=4, column=0, pady=5, sticky="w")
-    tk.Entry(left_frame, width=20, font=("Arial", 12), bg="#FFDDDD").grid(row=4, column=1, pady=5, padx=5)
-    tk.Label(left_frame, text="SNF", font=("Arial", 12, "bold")).grid(row=5, column=0, pady=5, sticky="w")
-    tk.Entry(left_frame, width=20, font=("Arial", 12), bg="#FFDDDD").grid(row=5, column=1, pady=5, padx=5)
-    tk.Label(left_frame, text="Amount", font=("Arial", 12, "bold")).grid(row=6, column=0, pady=5, sticky="w")
-    tk.Entry(left_frame, width=20, font=("Arial", 12)).grid(row=6, column=1, pady=5, padx=5)
+    name_entry = tk.Entry(left_frame, width=20, font=("Arial", 12))
+    code_entry = tk.Entry(left_frame, width=20, font=("Arial", 12))
+    mob_entry = tk.Entry(left_frame, width=20, font=("Arial", 12))
+    liter_entry = tk.Entry(left_frame, width=20, font=("Arial", 12), bg="#FFDDDD")
+    fat_entry = tk.Entry(left_frame, width=20, font=("Arial", 12), bg="#FFDDDD")
+    snf_entry = tk.Entry(left_frame, width=20, font=("Arial", 12), bg="#FFDDDD")
+    amount_entry = tk.Entry(left_frame, width=20, font=("Arial", 12))
 
-    # Add average and rate section
-    tk.Label(left_frame, text="AVG. Qty", font=("Arial", 12, "bold")).grid(row=3, column=2, pady=5, padx=10, sticky="w")
-    tk.Entry(left_frame, width=10, font=("Arial", 12)).grid(row=3, column=3, pady=5, padx=5)
-    tk.Label(left_frame, text="AVG. Fat", font=("Arial", 12, "bold")).grid(row=4, column=2, pady=5, padx=10, sticky="w")
-    tk.Entry(left_frame, width=10, font=("Arial", 12)).grid(row=4, column=3, pady=5, padx=5)
-    tk.Label(left_frame, text="AVG. SNF", font=("Arial", 12, "bold")).grid(row=5, column=2, pady=5, padx=10, sticky="w")
-    tk.Entry(left_frame, width=10, font=("Arial", 12)).grid(row=5, column=3, pady=5, padx=5)
-    tk.Label(left_frame, text="Rate", font=("Arial", 12, "bold")).grid(row=6, column=2, pady=5, padx=10, sticky="w")
-    tk.Entry(left_frame, width=10, font=("Arial", 12)).grid(row=6, column=3, pady=5, padx=5)
+    # Labels and Entry widgets
+    entries = [
+        ("Name", name_entry),
+        ("Code", code_entry),
+        ("Mob.No", mob_entry),
+        ("Liter", liter_entry),
+        ("Fat", fat_entry),
+        ("SNF", snf_entry),
+        ("Amount", amount_entry)
+    ]
+    for i, (label, entry) in enumerate(entries):
+        tk.Label(left_frame, text=label, font=("Arial", 12, "bold")).grid(row=i, column=0, pady=5, sticky="w")
+        entry.grid(row=i, column=1, pady=5, padx=5)
+
+    # Additional average and rate section
+    avg_entries = [
+        ("AVG. Qty", "Liter"),
+        ("AVG. Fat", "Fat"),
+        ("AVG. SNF", "SNF"),
+        ("Rate", "Rate")
+    ]
+    for i, (label, entry) in enumerate(avg_entries, start=3):
+        tk.Label(left_frame, text=label, font=("Arial", 12, "bold")).grid(row=i, column=2, pady=5, padx=10, sticky="w")
+        avg_entry = tk.Entry(left_frame, width=10, font=("Arial", 12))
+        avg_entry.grid(row=i, column=3, pady=5, padx=5)
 
     # Button section
+    def on_ok_button_click():
+        # Get data from the entries and insert it into the list table
+        member_data = (name_entry.get(), code_entry.get(), mob_entry.get(), liter_entry.get(), fat_entry.get(), snf_entry.get(), amount_entry.get())
+        list_table.insert("", "end", values=member_data)
+        # Optionally, clear the entries after submitting
+        for entry in [name_entry, code_entry, mob_entry, liter_entry, fat_entry, snf_entry, amount_entry]:
+            entry.delete(0, tk.END)
+
+    def on_setting_button_click():
+        show_settings()
+
+    def on_close_button_click():
+        root.quit()  # Close the application
+
     button_frame = tk.Frame(root, padx=10, pady=10)
     button_frame.pack(side="left", fill="y", expand=False)
-    tk.Button(button_frame, text="OK", font=("Arial", 12, "bold"), width=10, height=2).pack(pady=10)
-    tk.Button(button_frame, text="Setting", font=("Arial", 12, "bold"), width=10, height=2).pack(pady=10)
-    tk.Button(button_frame, text="Close", font=("Arial", 12, "bold"), width=10, height=2, command=root.quit).pack(pady=10)
+    tk.Button(button_frame, text="OK", font=("Arial", 12, "bold"), width=10, height=2, command=on_ok_button_click).pack(pady=10)
+    tk.Button(button_frame, text="Setting", font=("Arial", 12, "bold"), width=10, height=2, command=on_setting_button_click).pack(pady=10)
+    tk.Button(button_frame, text="Close", font=("Arial", 12, "bold"), width=10, height=2, command=on_close_button_click).pack(pady=10)
 
     # Right side - Summary and List
     right_frame = tk.Frame(root, padx=10, pady=10)
@@ -67,15 +90,24 @@ def create_mainboard(root):
         summary_table.column(col, anchor="center", width=100)
     summary_table.pack(fill="x", pady=10)
 
-    # List table
+    # List table with dynamic data population
     list_label = tk.Label(right_frame, text="List", font=("Arial", 14, "bold"))
     list_label.pack(anchor="w")
-    list_columns = ("Code", "Liter", "Fat", "SNF", "Rate", "Amount")
+    list_columns = ("Name", "Code", "Mob.No", "Liter", "Fat", "SNF", "Amount")
     list_table = ttk.Treeview(right_frame, columns=list_columns, show="headings", height=4)
     for col in list_columns:
         list_table.heading(col, text=col)
-        list_table.column(col, anchor="center", width=80)
+        list_table.column(col, anchor="center", width=100)
     list_table.pack(fill="x", pady=10)
+
+    # Add scrollbars to the List table
+    scrollbar_y = tk.Scrollbar(right_frame, orient="vertical", command=list_table.yview)
+    scrollbar_y.pack(side="right", fill="y")
+    list_table.config(yscrollcommand=scrollbar_y.set)
+
+    scrollbar_x = tk.Scrollbar(right_frame, orient="horizontal", command=list_table.xview)
+    scrollbar_x.pack(side="bottom", fill="x")
+    list_table.config(xscrollcommand=scrollbar_x.set)
 
     # Previous Day's Collection table
     prev_day_label = tk.Label(right_frame, text="Previous Day's Milk Collection", font=("Arial", 12, "bold"), bg="#FFCCCC")
@@ -95,6 +127,13 @@ def create_mainboard(root):
 
     # Update time initially
     update_time()
+
+    # Settings Window (Popup)
+    def show_settings():
+        settings_window = tk.Toplevel(root)
+        settings_window.title("Settings")
+        tk.Label(settings_window, text="Adjust your settings here").pack(pady=10)
+        tk.Button(settings_window, text="Close", command=settings_window.destroy).pack(pady=10)
 
 # Initialize and run the main application window
 root = tk.Tk()

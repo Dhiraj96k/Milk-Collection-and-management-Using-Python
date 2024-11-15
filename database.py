@@ -1,27 +1,21 @@
 import sqlite3
 
-# Step 1: Connect to the database
+# Connect to the SQLite database
 conn = sqlite3.connect('project_database.db')
 
-# Step 2: Create a cursor object
+# Create a cursor object
 cursor = conn.cursor()
 
-# Step 4: Insert data including the 'password' column
-cursor.execute('''
-INSERT INTO admin (username, email, password) 
-VALUES (?, ?, ?)
-''', ('admin-dhiraj', 'dhirajsalunke7350@gmail.com', 'admin-login'))
+# Query to get the list of all tables
+cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
 
-# Step 5: Commit the changes
-conn.commit()
+# Fetch all the tables
+tables = cursor.fetchall()
 
-# Step 6: Verify the inserted data
-cursor.execute('SELECT * FROM admin')
-rows = cursor.fetchall()
+# Print all tables
+print("Tables in the database:")
+for table in tables:
+    print(table[0])
 
-for row in rows:
-    print(row)
-
-# Step 7: Close the connection
+# Close the connection
 conn.close()
-
