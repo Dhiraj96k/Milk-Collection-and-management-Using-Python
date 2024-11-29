@@ -1,183 +1,321 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import messagebox
+from tkinter import ttk
 import sqlite3
 from datetime import datetime
+import threading  # To ensure database queries do not block the GUI
 
-# Function to fetch details from the database by code
-def fetch_details_by_code(code):
-    """Fetch the name and mobno from per_info based on the code."""
-    # Connect to the database
-    conn = sqlite3.connect('project_database.db')
-    cursor = conn.cursor()
-    
-    # Query the database for the given code
-    cursor.execute("SELECT name, mobno FROM per_info WHERE code = ?", (code,))
-    
-    # Fetch the result
-    result = cursor.fetchone()
-    
-    # Close the connection
-    conn.close()
-    
-    if result:
-        return result  # Return the name and mobno
-    else:
-        return None  # Return None if no record is found
+class MilkManagementApp:
+    def __init__(self, root):
+        self.root = root
+        self.context = {}
 
-# Event handler for when the code entry field loses focus or Enter is pressed
-def on_code_entry_change(event=None):
-    """Function to handle code entry change event when focus is lost or Enter is pressed."""
-    code = code_entry.get()
-    
-    if code.isdigit():  # Ensure the entered code is a number
-        # Fetch name and mobno from the database based on code
-        result = fetch_details_by_code(int(code))
-        
-        if result:
-            # Update the name and mobno fields with the fetched data
-            name_entry.delete(0, tk.END)
-            name_entry.insert(0, result[0])
-            
-            mobno_entry.delete(0, tk.END)
-            mobno_entry.insert(0, result[1])
+        # Set up the main window layout
+        self.create_mainboard()
+
+    # Helper methods
+    def clear_entry(self, entry):
+        entry.delete(0, tk.END)
+
+    def insert_into_entry(self, entry, value):
+        self.clear_entry(entry)
+        entry.insert(0, value)
+
+    # Fetch details from the database by code
+    def fetch_details_by_code(self, code):
+        try:
+            conn = sqlite3.connect('project_database.db')
+            cursor = conn.cursor()
+            cursor.execute("SELECT name, mobno FROM per_info WHERE code = ?", (code,))
+            result = cursor.fetchone()
+            conn.close()
+            return result
+        except sqlite3.Error as e:
+            messagebox.showerror("Database Error", f"Error accessing database: {e}")
+            return None
+
+# Calculate rate based on fat and SNF
+    def calculate_rate(self, fat, snf):
+        if 3.0 <= fat <= 3.4 and 8.0 < snf <= 8.3:
+            return 33
+        elif 3.4 < fat <= 3.8 and 8.3 < snf <= 8.7:
+            return 35
+        elif fat > 3.8 and snf > 8.8:
+            return 37
+        elif fat < 3.0 and snf <= 8.0:
+            return 30
         else:
-            # If no data is found for the entered code, show an error message
-            messagebox.showerror("Error", f"No data found for code: {code}")
-            name_entry.delete(0, tk.END)
-            mobno_entry.delete(0, tk.END)
-    else:
-        # Clear the fields if the code is not a valid number
-        name_entry.delete(0, tk.END)
-        mobno_entry.delete(0, tk.END)
+            return 0
 
-# Function to create the main board (GUI)
-def create_mainboard(root):
-    # Set the geometry of the main window to full screen
-    screen_width = root.winfo_screenwidth()
-    screen_height = root.winfo_screenheight()
-    root.geometry(f"{screen_width}x{screen_height}")
 
-    # Top banner with title and time
-    top_banner = tk.Frame(root, bg="yellow", height=60)
-    top_banner.pack(fill="x")
-    title_label = tk.Label(top_banner, text="THE HINDU DHUDH SANKULAN KENDRA", font=("Arial", 20, "bold"), bg="yellow")
-    title_label.pack(pady=10, side="left", padx=20)
+    # Event handler for code entry change
+    def on_code_entry_change(self, event=None):
+        code = self.context['code_entry'].get()
+        if code.isdigit():
+            result = self.fetch_details_by_code(int(code))
+            if result:
+                self.insert_into_entry(self.context['name_entry'], result[0])
+                self.insert_into_entry(self.context['mobno_entry'], result[1])
+            else:
+                messagebox.showerror("Error", f"No data found for code: {code}")
+                self.clear_entry(self.context['name_entry'])
+                self.clear_entry(self.context['mobno_entry'])
+        else:
+            self.clear_entry(self.context['name_entry'])
+            self.clear_entry(self.context['mobno_entry'])
 
-    time_label = tk.Label(top_banner, font=("Arial", 12, "bold"), bg="yellow", fg="red")
-    time_label.pack(pady=10, side="right", padx=20)
+    # Event handler to calculate total
+    def calculate_total(self, event=None):
+        try:
+            fat = float(self.context['fat_entry'].get())
+            snf = float(self.context['snf_entry'].get())
+            liter = float(self.context['liter_entry'].get())
+            
+            if not (0 < fat < 10 and 0 < snf < 10):
+                messagebox.showwarning("Warning", "Fat and SNF values should be between 0 and 10.")
+                return
+            
+            rate = self.calculate_rate(fat, snf)
+            if rate == 0:
+                messagebox.showwarning("Warning", "Fat and SNF values are out of valid range.")
+                self.insert_into_entry(self.context['rate_entry'], "0")
+            else:
+                self.insert_into_entry(self.context['rate_entry'], str(rate))
+            
+            total_amount = liter * rate
+            self.insert_into_entry(self.context['total_entry'], f"{total_amount:.2f}")
+        except ValueError:
+            messagebox.showerror("Input Error", "Please enter valid numeric values.")
+            self.clear_entry(self.context['rate_entry'])
+            self.clear_entry(self.context['total_entry'])
 
-    # Left side - Data Entry Section
-    left_frame = tk.Frame(root, padx=20, pady=10)
-    left_frame.pack(side="left", fill="y", expand=False)
+    # Function to get the current time period (AM/PM)
+    def get_time_period(self):
+        current_hour = datetime.now().hour
+        return "AM" if current_hour < 12 else "PM"
 
-    # Code Entry Field
-    tk.Label(left_frame, text="Code", font=("Arial", 12, "bold")).grid(row=0, column=0, pady=5, sticky="w")
-    global code_entry  # Make code_entry global so it can be accessed in other functions
-    code_entry = tk.Entry(left_frame, width=20, font=("Arial", 12))
-    code_entry.grid(row=0, column=1, pady=5, padx=5)
-    code_entry.bind("<Return>", on_code_entry_change)  # Bind Enter key to call the function
-    
-    # Name Entry Field
-    tk.Label(left_frame, text="Name", font=("Arial", 12, "bold")).grid(row=1, column=0, pady=5, sticky="w")
-    global name_entry  # Make name_entry global
-    name_entry = tk.Entry(left_frame, width=20, font=("Arial", 12))
-    name_entry.grid(row=1, column=1, pady=5, padx=5)
-    
-    # Mobile Number Entry Field
-    tk.Label(left_frame, text="Mob.No", font=("Arial", 12, "bold")).grid(row=2, column=0, pady=5, sticky="w")
-    global mobno_entry  # Make mobno_entry global
-    mobno_entry = tk.Entry(left_frame, width=20, font=("Arial", 12))
-    mobno_entry.grid(row=2, column=1, pady=5, padx=5)
-    
-    # Literature Section
-    tk.Label(left_frame, text="Liter", font=("Arial", 12, "bold")).grid(row=3, column=0, pady=5, sticky="w")
-    liter_entry = tk.Entry(left_frame, width=20, font=("Arial", 12), bg="#FFDDDD")
-    liter_entry.grid(row=3, column=1, pady=5, padx=5)
-    
-    # Fat Section
-    tk.Label(left_frame, text="Fat", font=("Arial", 12, "bold")).grid(row=4, column=0, pady=5, sticky="w")
-    fat_entry = tk.Entry(left_frame, width=20, font=("Arial", 12), bg="#FFDDDD")
-    fat_entry.grid(row=4, column=1, pady=5, padx=5)
+    # Function to check if a record already exists for the same date and time period
+    def check_if_record_exists(self, code, current_date, time_period):
+        try:
+            conn = sqlite3.connect('project_database.db')
+            cursor = conn.cursor()
+            cursor.execute("""SELECT COUNT(*) FROM milk_info
+                              WHERE code = ? AND date = ? AND time_period = ?""", (code, current_date, time_period))
+            count = cursor.fetchone()[0]
+            conn.close()
+            return count > 0
+        except sqlite3.Error as e:
+            messagebox.showerror("Database Error", f"Error checking existing record: {e}")
+            return False
 
-    # SNF Section
-    tk.Label(left_frame, text="SNF", font=("Arial", 12, "bold")).grid(row=5, column=0, pady=5, sticky="w")
-    snf_entry = tk.Entry(left_frame, width=20, font=("Arial", 12), bg="#FFDDDD")
-    snf_entry.grid(row=5, column=1, pady=5, padx=5)
-    
-    # Amount Section
-    tk.Label(left_frame, text="Amount", font=("Arial", 12, "bold")).grid(row=6, column=0, pady=5, sticky="w")
-    amount_entry = tk.Entry(left_frame, width=20, font=("Arial", 12))
-    amount_entry.grid(row=6, column=1, pady=5, padx=5)
+    # Add record method
+    def add_record(self, treeview):
+        code = self.context['code_entry'].get()
+        liter = self.context['liter_entry'].get()
+        fat = self.context['fat_entry'].get()
+        snf = self.context['snf_entry'].get()
+        rate = self.context['rate_entry'].get()
+        total_amount = self.context['total_entry'].get()
 
-    # Average Quantity, Fat, SNF, Rate Section
-    tk.Label(left_frame, text="AVG. Qty", font=("Arial", 12, "bold")).grid(row=3, column=2, pady=5, padx=10, sticky="w")
-    avg_qty_entry = tk.Entry(left_frame, width=10, font=("Arial", 12))
-    avg_qty_entry.grid(row=3, column=3, pady=5, padx=5)
+        if not (code and liter and fat and snf and rate and total_amount):
+            messagebox.showerror("Input Error", "All fields must be filled to add a record.")
+            return
 
-    tk.Label(left_frame, text="AVG. Fat", font=("Arial", 12, "bold")).grid(row=4, column=2, pady=5, padx=10, sticky="w")
-    avg_fat_entry = tk.Entry(left_frame, width=10, font=("Arial", 12))
-    avg_fat_entry.grid(row=4, column=3, pady=5, padx=5)
+        current_date = datetime.now().strftime('%Y-%m-%d')
+        time_period = self.get_time_period()
 
-    tk.Label(left_frame, text="AVG. SNF", font=("Arial", 12, "bold")).grid(row=5, column=2, pady=5, padx=10, sticky="w")
-    avg_snf_entry = tk.Entry(left_frame, width=10, font=("Arial", 12))
-    avg_snf_entry.grid(row=5, column=3, pady=5, padx=5)
+        if self.check_if_record_exists(code, current_date, time_period):
+            messagebox.showerror("Error", f"Record for code {code} already exists for {time_period} today.")
+            return
 
-    tk.Label(left_frame, text="Rate", font=("Arial", 12, "bold")).grid(row=6, column=2, pady=5, padx=10, sticky="w")
-    rate_entry = tk.Entry(left_frame, width=10, font=("Arial", 12))
-    rate_entry.grid(row=6, column=3, pady=5, padx=5)
+        threading.Thread(target=self.insert_record, args=(code, liter, fat, snf, rate, total_amount, current_date, time_period, treeview)).start()
 
-    # Button section
-    button_frame = tk.Frame(root, padx=10, pady=10)
-    button_frame.pack(side="left", fill="y", expand=False)
-    tk.Button(button_frame, text="OK", font=("Arial", 12, "bold"), width=10, height=2).pack(pady=10)
-    tk.Button(button_frame, text="Setting", font=("Arial", 12, "bold"), width=10, height=2).pack(pady=10)
-    tk.Button(button_frame, text="Close", font=("Arial", 12, "bold"), width=10, height=2, command=root.quit).pack(pady=10)
+    # Insert record into the database
+    def insert_record(self, code, liter, fat, snf, rate, total_amount, current_date, time_period, treeview):
+        try:
+            conn = sqlite3.connect('project_database.db')
+            cursor = conn.cursor()
+            cursor.execute("""INSERT INTO milk_info (code, liter, fat, snf, rate, amount, date, time_period)
+                              VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                           (code, liter, fat, snf, rate, total_amount, current_date, time_period))
+            conn.commit()
+            conn.close()
 
-    # Right side - Summary and List
-    right_frame = tk.Frame(root, padx=10, pady=10)
-    right_frame.pack(side="left", fill="both", expand=True)
+            self.update_milk_table(treeview)
+            messagebox.showinfo("Success", "Record added successfully!")
 
-    # Summary table
-    summary_label = tk.Label(right_frame, text="Summary", font=("Arial", 14, "bold"))
-    summary_label.pack(anchor="w")
-    columns = ("Milk", "Member", "Liter", "Fat", "SNF", "Amount", "Sales")
-    summary_table = ttk.Treeview(right_frame, columns=columns, show="headings", height=2)
-    for col in columns:
-        summary_table.heading(col, text=col)
-        summary_table.column(col, anchor="center", width=100)
-    summary_table.pack(fill="x", pady=10)
+            for entry in self.context.values():
+                self.clear_entry(entry)
+            
+            self.context['code_entry'].focus()
+        except sqlite3.Error as e:
+            messagebox.showerror("Database Error", f"Error while adding record: {e}")
 
-    # List table
-    list_label = tk.Label(right_frame, text="List", font=("Arial", 14, "bold"))
-    list_label.pack(anchor="w")
-    list_columns = ("Code", "Liter", "Fat", "SNF", "Rate", "Amount")
-    list_table = ttk.Treeview(right_frame, columns=list_columns, show="headings", height=4)
-    for col in list_columns:
-        list_table.heading(col, text=col)
-        list_table.column(col, anchor="center", width=80)
-    list_table.pack(fill="x", pady=10)
+        # Update milk table with latest records
+    def update_milk_table(self, treeview):
+        try:
+            # Get the current date
+            current_date = datetime.now().strftime('%Y-%m-%d')
 
-    # Previous Day's Collection table
-    prev_day_label = tk.Label(right_frame, text="Previous Day's Milk Collection", font=("Arial", 12, "bold"), bg="#FFCCCC")
-    prev_day_label.pack(fill="x", pady=5)
-    prev_day_columns = ("Date", "Liter", "Fat", "SNF", "Rate", "Amount")
-    prev_day_table = ttk.Treeview(right_frame, columns=prev_day_columns, show="headings", height=2)
-    for col in prev_day_columns:
-        prev_day_table.heading(col, text=col)
-        prev_day_table.column(col, anchor="center", width=100)
-    prev_day_table.pack(fill="x", pady=10)
+            # Connect to the database
+            conn = sqlite3.connect('project_database.db')
+            cursor = conn.cursor()
 
-    # Function to update time
-    def update_time():
-        current_time = datetime.now().strftime("%d-%m-%Y %I:%M:%S %p")
-        time_label.config(text=current_time)
-        root.after(1000, update_time)  # Update every 1 second
+            # Modify the query to select records for the current date
+            cursor.execute("""SELECT code, liter, fat, snf, rate, amount, date 
+                            FROM milk_info WHERE date = ?""", (current_date,))
+            rows = cursor.fetchall()
+            conn.close()
 
-    # Update time initially
-    update_time()
+            # Clear the existing rows in the treeview
+            for row in treeview.get_children():
+                treeview.delete(row)
 
-# Initialize and run the main application window
+            # Insert the new rows into the treeview
+            for row in rows:
+                treeview.insert('', 'end', values=row)
+
+        except sqlite3.Error as e:
+            messagebox.showerror("Database Error", f"Error while fetching data for table: {e}")
+
+        # Update the selected record
+    def on_update_button_click(self, treeview):
+        # Get the selected record in the treeview
+        selected_item = treeview.selection()
+        if not selected_item:
+            messagebox.showerror("Selection Error", "Please select a record to update.")
+            return
+
+        # Extract the original code from the selected record
+        original_code = treeview.item(selected_item[0])["values"][0]
+
+        try:
+            # Fetch updated values from entry fields
+            updated_values = {
+                "liter": self.context['liter_entry'].get(),
+                "fat": self.context['fat_entry'].get(),
+                "snf": self.context['snf_entry'].get(),
+                "rate": self.context['rate_entry'].get(),
+                "amount": self.context['total_entry'].get()
+            }
+
+            # Validate that all values are filled
+            if not all(updated_values.values()):
+                raise ValueError("All fields must be filled.")
+
+            # Convert values to appropriate types
+            updated_values = {key: float(value) for key, value in updated_values.items()}
+
+            # Connect to the database and update the record
+            conn = sqlite3.connect('project_database.db')
+            cursor = conn.cursor()
+            cursor.execute(
+                """UPDATE milk_info 
+                SET liter = ?, fat = ?, snf = ?, rate = ?, amount = ?
+                WHERE code = ?""",
+                (updated_values["liter"], updated_values["fat"], updated_values["snf"],
+                updated_values["rate"], updated_values["amount"], original_code)
+            )
+            conn.commit()
+            conn.close()
+
+            # Refresh the treeview
+            self.update_milk_table(treeview)
+
+            # Notify the user of success
+            messagebox.showinfo("Success", "Record updated successfully!")
+
+            # Clear the entry fields after updating
+            for entry in self.context.values():
+                self.clear_entry(entry)
+            self.context['code_entry'].focus()
+
+        except sqlite3.Error as e:
+            messagebox.showerror("Database Error", f"Error updating record: {e}")
+        except ValueError as ve:
+            messagebox.showerror("Input Error", f"Invalid input: {ve}")
+
+        # Exit application with confirmation
+        def exit_application(self):
+            if messagebox.askyesno("Exit", "Are you sure you want to exit?"):
+                self.root.destroy()
+
+    # Create the mainboard UI
+    def create_mainboard(self):
+        screen_width, screen_height = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
+        self.root.geometry(f"{screen_width}x{screen_height}")
+        
+        top_banner = tk.Frame(self.root, bg="yellow", height=60)
+        top_banner.pack(fill="x")
+        tk.Label(top_banner, text="THE HINDU DHUDH SANKULAN KENDRA", font=("Arial", 20, "bold"), bg="yellow").pack(side="left", padx=20)
+        time_label = tk.Label(top_banner, font=("Arial", 12, "bold"), bg="yellow", fg="red")
+        time_label.pack(side="right", padx=20)
+
+        def update_time():
+            time_label.config(text=datetime.now().strftime("%d-%m-%Y %I:%M:%S %p"))
+            self.root.after(1000, update_time)
+        update_time()
+
+        left_frame = tk.Frame(self.root, padx=20, pady=10)
+        left_frame.pack(side="left", fill="y")
+        
+        labels = ["Code", "Name", "Mob.No", "Liter", "Fat", "SNF", "Rate", "Total Amount"]
+        for i, text in enumerate(labels):
+            tk.Label(left_frame, text=text, font=("Arial", 12, "bold")).grid(row=i, column=0, pady=5, sticky="w")
+
+        # Entry widgets
+        self.context['code_entry'] = tk.Entry(left_frame, font=("Arial", 12))
+        self.context['name_entry'] = tk.Entry(left_frame, font=("Arial", 12))
+        self.context['mobno_entry'] = tk.Entry(left_frame, font=("Arial", 12))
+        self.context['liter_entry'] = tk.Entry(left_frame, font=("Arial", 12), bg="#FFDDDD")
+        self.context['fat_entry'] = tk.Entry(left_frame, font=("Arial", 12), bg="#FFDDDD")
+        self.context['snf_entry'] = tk.Entry(left_frame, font=("Arial", 12), bg="#FFDDDD")
+        self.context['rate_entry'] = tk.Entry(left_frame, font=("Arial", 12))
+        self.context['total_entry'] = tk.Entry(left_frame, font=("Arial", 12))
+        
+        entries = list(self.context.values())
+        for i, entry in enumerate(entries):
+            entry.grid(row=i, column=1, pady=5, padx=5)
+        
+        # Create buttons with equal width and height
+        button_width = 17
+        button_height = 2
+        tk.Button(left_frame, text="Add", font=("Arial", 12, "bold"), bg="green", fg="white", 
+                width=button_width, height=button_height, command=lambda: self.add_record(treeview)).grid(row=8, column=0, padx=5, pady=5, sticky="ew")
+        tk.Button(left_frame, text="Update", font=("Arial", 12, "bold"), bg="blue", fg="white", 
+                width=button_width, height=button_height, command=lambda: self.on_update_button_click(treeview)).grid(row=8, column=1, padx=10, pady=5, sticky="ew")
+
+        right_frame = tk.Frame(self.root, padx=20, pady=10)
+        right_frame.pack(side="right", fill="y")
+
+        treeview = ttk.Treeview(right_frame, columns=("Code", "Liter", "Fat", "SNF", "Rate", "Total Amount", "Date"), show="headings")
+        treeview.heading("Code", text="Code")
+        treeview.heading("Liter", text="Liter")
+        treeview.heading("Fat", text="Fat")
+        treeview.heading("SNF", text="SNF")
+        treeview.heading("Rate", text="Rate")
+        treeview.heading("Total Amount", text="Total Amount")
+        treeview.heading("Date", text="Date")
+
+        treeview.column("Code", width=100)
+        treeview.column("Liter", width=100)
+        treeview.column("Fat", width=100)
+        treeview.column("SNF", width=100)
+        treeview.column("Rate", width=100)
+        treeview.column("Total Amount", width=150)
+        treeview.column("Date", width=150)
+
+        treeview.pack(fill="both", expand=True)
+
+        # Update table with data from the database
+        self.update_milk_table(treeview)
+
+        # Bindings
+        self.context['code_entry'].bind("<Return>", self.on_code_entry_change)
+        self.context['snf_entry'].bind("<Return>", self.calculate_total)
+
+# Create Tkinter root window and start the application
 root = tk.Tk()
 root.title("Milk Collection System")
-create_mainboard(root)
+app = MilkManagementApp(root)
 root.mainloop()
