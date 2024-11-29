@@ -6,11 +6,9 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import random
-from twilio.rest import Client
-import os
 from PIL import Image, ImageTk
 from tkinter import simpledialog
-from dashboard import *
+import subprocess
 
 class MilkManage:
     def __init__(self, root):
@@ -251,14 +249,15 @@ class MilkManage:
 
         if result:
             messagebox.showinfo("Success", "Login successful!")
-            self.main_panel()
+            try:
+                subprocess.Popen(["python","main_board.py"])
+            except Exception as e:
+                messagebox.showerror("Warning!", "Check Information!")
         else:
             messagebox.showerror("Error", "Invalid Username or Password")
 
         conn.close()
 
-    def main_panel(self):
-        print("Admin Dashboard")
 
 
 if __name__ == "__main__":
