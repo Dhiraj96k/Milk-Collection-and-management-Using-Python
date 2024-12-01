@@ -199,11 +199,11 @@ class MilkManage:
         if entered_otp == self.otp_code:
             messagebox.showinfo("Success", "Login successful!")
             # Proceed to the next screen or functionality
-            
+            self.farmerdashboard()
         else:
             messagebox.showerror("Error", "Invalid OTP. Please try again.")
-
-            # Send OTP via email
+    
+    # Send OTP via email
     def send_email(self, receiver_email, otp):
         subject = 'Your OTP Code'
         message = f'Your OTP code is: {otp}'
@@ -228,6 +228,96 @@ class MilkManage:
             # Ensure the server is quit only if it's successfully initialized
             if 'server' in locals() and server:
                 server.quit()
+
+    def farmerdashboard(self):
+        # Create a new window for the farmer's dashboard
+        dashboard = tk.Tk()
+        dashboard.title("Farmer Dashboard")
+
+        # Auto-detect screen size for Farmer dashboard
+        screen_width = dashboard.winfo_screenwidth()
+        screen_height = dashboard.winfo_screenheight()
+        
+        # Set the window size (50% of the screen width and 60% of the screen height)
+        window_width = int(screen_width)
+        window_height = int(screen_height)
+        
+        # Calculate the position to center the window
+        x_position = int((screen_width - window_width) / 2)
+        y_position = int((screen_height - window_height) / 2)
+        
+        dashboard.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
+        dashboard.configure(bg="#e9eff5")
+
+        # Set the font styles
+        title_font = tkFont.Font(family="Helvetica", size=18, weight="bold")
+        label_font = tkFont.Font(family="Helvetica", size=14)
+        entry_font = tkFont.Font(family="Helvetica", size=12)
+
+        # Frame for the dashboard content
+        frame = tk.Frame(dashboard, bg="#ffffff", bd=2, relief="groove", padx=20, pady=20)
+        frame.place(relx=0.5, rely=0.5, anchor="center")
+
+        # Add a title label
+        tk.Label(frame, text="Farmer Dashboard", font=title_font, bg="#ffffff", fg="#333333").grid(row=0, column=0, columnspan=3, pady=(0, 20))
+
+        # Fetch and display the farmer's personal information (name, mobno, email) from the 'per_info' table
+        try:
+            code = self.code  # The farmer's unique code
+            
+            # Connect to the database
+            conn = sq.connect('project_database.db')
+            cursor = conn.cursor()
+
+            # Fetch the farmer's name, mobno, and email from the per_info table based on the unique code
+            cursor.execute("SELECT name, mobno, email FROM per_info WHERE code = ?", (code,))
+            farmer_info = cursor.fetchone()  # Fetch the name, mobile number, and email
+
+            if farmer_info:
+                name, mobno, email = farmer_info
+
+                # Display Farmer's Profile Information
+                tk.Label(frame, text=f"Name: {name}", font=label_font, bg="#ffffff").grid(row=1, column=0, sticky="w", padx=10, pady=8)
+                tk.Label(frame, text=f"Mobile: {mobno}", font=label_font, bg="#ffffff").grid(row=2, column=0, sticky="w", padx=10, pady=8)
+                tk.Label(frame, text=f"Email: {email}", font=label_font, bg="#ffffff").grid(row=3, column=0, sticky="w", padx=10, pady=8)
+
+            else:
+                # In case no farmer information is found for the entered code
+                messagebox.showwarning("No Data Found", "No farmer record found for the entered code.")
+
+            # Fetch and display the farmer's milk records from the 'milk_info' table
+            cursor.execute("SELECT liter, fat, snf, rate, amount, date, time_period FROM milk_info WHERE code = ?", (code,))
+            milk_records = cursor.fetchall()  # Fetching all milk records for the farmer
+
+            if milk_records:
+                # Display the Milk Records heading
+                tk.Label(frame, text="Milk Records", font=title_font, bg="#ffffff", fg="#333333").grid(row=4, column=0, columnspan=3, pady=(20, 10))
+
+                # Add headers for the milk records table
+                headers = ["Date", "Liter", "Fat", "SNF", "Rate", "Amount", "Time Period"]
+                for col_num, header in enumerate(headers):
+                    tk.Label(frame, text=header, font=label_font, bg="#ffffff", width=15, relief="solid").grid(row=5, column=col_num, padx=5, pady=5)
+
+                # Display the fetched milk records in rows
+                for row_num, record in enumerate(milk_records, start=6):
+                    for col_num, value in enumerate(record):
+                        tk.Label(frame, text=value, font=label_font, bg="#ffffff", width=15, relief="solid").grid(row=row_num, column=col_num, padx=5, pady=5)
+
+            else:
+                # In case no milk records are found for the entered code
+                messagebox.showwarning("No Data Found", "No milk records found for this farmer.")
+
+            conn.close()
+
+        except sq.Error as e:
+            messagebox.showerror("Database Error", f"Error while fetching data: {e}")
+
+        # Add a Logout Button to return to the main login screen
+        logout_button = tk.Button(frame, text="Logout", font=label_font, command=dashboard.destroy, bg="#f44336", fg="white", width=20, height=2)
+        logout_button.grid(row=row_num + 1, column=0, columnspan=3, pady=20)
+
+        dashboard.mainloop()
+
 
     def verify_login(self):
         entered_otp = self.otp_entry.get()

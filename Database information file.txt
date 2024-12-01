@@ -1,0 +1,18 @@
+database name = "project_database.db"
+
+table name = "per_info"
+Column Name: code, Data Type: INTEGER, Not Null: 0, Default Value: None, Primary Key: 1
+Column Name: name, Data Type: VARCHAR(30), Not Null: 0, Default Value: None, Primary Key: 0
+Column Name: mobno, Data Type: VARCHAR(10), Not Null: 0, Default Value: None, Primary Key: 0
+Column Name: email, Data Type: VARCHAR(255), Not Null: 0, Default Value: None, Primary Key: 0
+
+
+table-name = "milk_info"
+Column Name: code, Data Type: INTEGER, Not Null: 0, Default Value: None, Primary Key: 1
+Column Name: liter, Data Type: INTEGER, Not Null: 0, Default Value: None, Primary Key: 0
+Column Name: fat, Data Type: FLOAT(2,1), Not Null: 0, Default Value: None, Primary Key: 0
+Column Name: snf, Data Type: FLOAT(2,1), Not Null: 0, Default Value: None, Primary Key: 0
+Column Name: rate, Data Type: INTEGER, Not Null: 0, Default Value: None, Primary Key: 0
+Column Name: amount, Data Type: BIGINT, Not Null: 0, Default Value: None, Primary Key: 0
+Column Name: date, Data Type: DATE, Not Null: 0, Default Value: None, Primary Key: 2
+Column Name: time_period, Data Type: TEXT, Not Null: 0, Default Value: None, Primary Key: 3
