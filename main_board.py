@@ -9,6 +9,7 @@ class MilkManagementApp:
     def __init__(self, root):
         self.root = root
         self.context = {}
+        
 
         # Set up the main window layout
         self.create_mainboard()
@@ -36,16 +37,20 @@ class MilkManagementApp:
 
 # Calculate rate based on fat and SNF
     def calculate_rate(self, fat, snf):
-        if 3.0 <= fat <= 3.4 and 8.0 < snf <= 8.3:
-            return 33
-        elif 3.4 < fat <= 3.8 and 8.3 < snf <= 8.7:
-            return 35
-        elif fat > 3.8 and snf > 8.8:
-            return 37
-        elif fat < 3.0 and snf <= 8.0:
-            return 30
+        if fat >= 3.0 and snf > 8.0:
+            if 3.0 <= fat <= 3.4 and 8.0 < snf <= 8.3:
+                return 33
+            elif 3.4 < fat <= 3.8 and 8.3 < snf <= 8.7:
+                return 35
+            elif fat > 3.8 and snf > 8.8:
+                return 37
+            else:
+                return 32  # Default rate for valid fat and SNF but not in specific subranges
+        elif fat < 3.0 or snf <= 8.0:
+            return 30  # Lower rate for low-quality milk
         else:
-            return 0
+            return 0  # Fallback for invalid input
+
 
 
     # Event handler for code entry change
