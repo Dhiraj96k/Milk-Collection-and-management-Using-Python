@@ -143,16 +143,16 @@ class MilkManage:
 
     def fetch_data_by_code(self, event):
         # Get the code entered by the farmer
-        code = self.code_entry.get()
+        self.code = self.code_entry.get()
 
-        if not code:
+        if not self.code:
             return
 
         # Query the database to get the mobile number and email for the entered code
         try:
             conn = sq.connect('project_database.db')
             cursor = conn.cursor()
-            cursor.execute("SELECT mobno, Email FROM per_info WHERE code = ?", (code,))
+            cursor.execute("SELECT mobno, Email FROM per_info WHERE code = ?", (self.code,))
             result = cursor.fetchone()
             conn.close()
 
