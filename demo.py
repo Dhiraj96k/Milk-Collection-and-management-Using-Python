@@ -234,89 +234,144 @@ class MilkManage:
         dashboard = tk.Tk()
         dashboard.title("Farmer Dashboard")
 
-        # Auto-detect screen size for Farmer dashboard
+        # Auto-detect screen size
         screen_width = dashboard.winfo_screenwidth()
         screen_height = dashboard.winfo_screenheight()
-        
-        # Set the window size (50% of the screen width and 60% of the screen height)
-        window_width = int(screen_width)
-        window_height = int(screen_height)
-        
-        # Calculate the position to center the window
+
+        # Set the window size (90% of the screen width and height)
+        window_width = int(screen_width * 0.9)
+        window_height = int(screen_height * 0.9)
+
+        # Center the window on the screen
         x_position = int((screen_width - window_width) / 2)
         y_position = int((screen_height - window_height) / 2)
-        
+
         dashboard.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
-        dashboard.configure(bg="#e9eff5")
+        dashboard.configure(bg="#f0f4f7")
 
-        # Set the font styles
-        title_font = tkFont.Font(family="Helvetica", size=18, weight="bold")
+        # Set font styles
+        title_font = tkFont.Font(family="Helvetica", size=24, weight="bold")
+        subtitle_font = tkFont.Font(family="Helvetica", size=18, weight="bold")
         label_font = tkFont.Font(family="Helvetica", size=14)
-        entry_font = tkFont.Font(family="Helvetica", size=12)
+        table_font = tkFont.Font(family="Helvetica", size=12)
 
-        # Frame for the dashboard content
-        frame = tk.Frame(dashboard, bg="#ffffff", bd=2, relief="groove", padx=20, pady=20)
-        frame.place(relx=0.5, rely=0.5, anchor="center")
+        # Add a header with a title
+        header = tk.Label(
+            dashboard,
+            text="Farmer Dashboard",
+            font=title_font,
+            bg="#2d98da",
+            fg="white",
+            pady=10,
+        )
+        header.pack(fill="x")
 
-        # Add a title label
-        tk.Label(frame, text="Farmer Dashboard", font=title_font, bg="#ffffff", fg="#333333").grid(row=0, column=0, columnspan=3, pady=(0, 20))
+        # Create a frame for the main content
+        content_frame = tk.Frame(dashboard, bg="#ffffff", padx=20, pady=20, relief="groove", bd=2)
+        content_frame.place(relx=0.5, rely=0.5, anchor="center", width=window_width * 0.9, height=window_height * 0.85)
 
-        # Fetch and display the farmer's personal information (name, mobno, email) from the 'per_info' table
+        # Fetch and display farmer information
         try:
-            code = self.code  # The farmer's unique code
-            
+            code = self.code
+
             # Connect to the database
             conn = sq.connect('project_database.db')
             cursor = conn.cursor()
 
-            # Fetch the farmer's name, mobno, and email from the per_info table based on the unique code
+            # Fetch farmer profile information
             cursor.execute("SELECT name, mobno, email FROM per_info WHERE code = ?", (code,))
-            farmer_info = cursor.fetchone()  # Fetch the name, mobile number, and email
+            farmer_info = cursor.fetchone()
 
             if farmer_info:
                 name, mobno, email = farmer_info
 
-                # Display Farmer's Profile Information
-                tk.Label(frame, text=f"Name: {name}", font=label_font, bg="#ffffff").grid(row=1, column=0, sticky="w", padx=10, pady=8)
-                tk.Label(frame, text=f"Mobile: {mobno}", font=label_font, bg="#ffffff").grid(row=2, column=0, sticky="w", padx=10, pady=8)
-                tk.Label(frame, text=f"Email: {email}", font=label_font, bg="#ffffff").grid(row=3, column=0, sticky="w", padx=10, pady=8)
+                # Profile Section
+                profile_frame = tk.Frame(content_frame, bg="#f5f7fa", padx=10, pady=10, relief="solid", bd=1)
+                profile_frame.pack(fill="x", pady=10)
+
+                tk.Label(profile_frame, text="Farmer Profile", font=subtitle_font, bg="#f5f7fa", fg="#34495e").pack(
+                    anchor="w", padx=10
+                )
+                tk.Label(profile_frame, text=f"Name: {name}", font=label_font, bg="#f5f7fa").pack(anchor="w", padx=10)
+                tk.Label(profile_frame, text=f"Mobile: {mobno}", font=label_font, bg="#f5f7fa").pack(anchor="w", padx=10)
+                tk.Label(profile_frame, text=f"Email: {email}", font=label_font, bg="#f5f7fa").pack(anchor="w", padx=10)
 
             else:
-                # In case no farmer information is found for the entered code
                 messagebox.showwarning("No Data Found", "No farmer record found for the entered code.")
 
-            # Fetch and display the farmer's milk records from the 'milk_info' table
+            # Milk Records Section
             cursor.execute("SELECT liter, fat, snf, rate, amount, date, time_period FROM milk_info WHERE code = ?", (code,))
-            milk_records = cursor.fetchall()  # Fetching all milk records for the farmer
+            milk_records = cursor.fetchall()
 
             if milk_records:
-                # Display the Milk Records heading
-                tk.Label(frame, text="Milk Records", font=title_font, bg="#ffffff", fg="#333333").grid(row=4, column=0, columnspan=3, pady=(20, 10))
+                records_frame = tk.Frame(content_frame, bg="#f5f7fa", padx=10, pady=10, relief="solid", bd=1)
+                records_frame.pack(fill="both", expand=True, pady=10)
 
-                # Add headers for the milk records table
-                headers = ["Date", "Liter", "Fat", "SNF", "Rate", "Amount", "Time Period"]
-                for col_num, header in enumerate(headers):
-                    tk.Label(frame, text=header, font=label_font, bg="#ffffff", width=15, relief="solid").grid(row=5, column=col_num, padx=5, pady=5)
+                tk.Label(records_frame, text="Milk Records", font=subtitle_font, bg="#f5f7fa", fg="#34495e").pack(
+                    anchor="w", padx=10, pady=(0, 10)
+                )
 
-                # Display the fetched milk records in rows
-                for row_num, record in enumerate(milk_records, start=6):
-                    for col_num, value in enumerate(record):
-                        tk.Label(frame, text=value, font=label_font, bg="#ffffff", width=15, relief="solid").grid(row=row_num, column=col_num, padx=5, pady=5)
+                # Table Header
+                headers = ["Liter", "Fat", "SNF", "Rate", "Amount", "Date", "Time Period"]
+                header_frame = tk.Frame(records_frame, bg="#34495e")
+                header_frame.pack(fill="x")
+
+                for header in headers:
+                    tk.Label(
+                        header_frame,
+                        text=header,
+                        font=label_font,
+                        bg="#34495e",
+                        fg="white",
+                        width=12,
+                        pady=5,
+                    ).pack(side="left", padx=2)
+
+                # Table Rows
+                for idx, record in enumerate(milk_records):
+                    row_bg = "#ffffff" if idx % 2 == 0 else "#f5f7fa"
+                    row_frame = tk.Frame(records_frame, bg=row_bg)
+                    row_frame.pack(fill="x")
+
+                    for col in record:
+                        tk.Label(
+                            row_frame,
+                            text=col,
+                            font=table_font,
+                            bg=row_bg,
+                            width=12,
+                            pady=5,
+                        ).pack(side="left", padx=2)
 
             else:
-                # In case no milk records are found for the entered code
-                messagebox.showwarning("No Data Found", "No milk records found for this farmer.")
+                tk.Label(
+                    content_frame,
+                    text="No milk records found for this farmer.",
+                    font=label_font,
+                    bg="#ffffff",
+                    fg="#e74c3c",
+                ).pack()
 
             conn.close()
 
         except sq.Error as e:
             messagebox.showerror("Database Error", f"Error while fetching data: {e}")
 
-        # Add a Logout Button to return to the main login screen
-        logout_button = tk.Button(frame, text="Logout", font=label_font, command=dashboard.destroy, bg="#f44336", fg="white", width=20, height=2)
-        logout_button.grid(row=row_num + 1, column=0, columnspan=3, pady=20)
+        # Logout Button
+        logout_button = tk.Button(
+            dashboard,
+            text="Logout",
+            font=label_font,
+            command=dashboard.destroy,
+            bg="#e74c3c",
+            fg="white",
+            width=15,
+            pady=5,
+        )
+        logout_button.pack(side="bottom", pady=20)
 
         dashboard.mainloop()
+
 
 
     def verify_login(self):
