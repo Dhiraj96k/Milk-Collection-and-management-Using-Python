@@ -6,7 +6,6 @@ import smtplib
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 import random
-from PIL import Image, ImageTk
 from tkinter import simpledialog
 import subprocess
 
@@ -26,7 +25,7 @@ class MilkManage:
             self.server.login(self.sender_email, self.sender_password)
             print("Email server connected successfully!")
         except Exception as e:
-            print(f"Failed to connect to email server: {e}")
+            print(f"Failed to connect to email server: {e} \n Please check your Internet Connection")
             self.server = None  # If connection fails, set server to None for safety
 
     # Setup the main login screen (Admin Login)
@@ -47,9 +46,7 @@ class MilkManage:
         
         self.root.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
         self.root.configure(bg="#f0f4f7")
-        
-        self.icon = ImageTk.PhotoImage(Image.open("cow-img.jpeg"))
-        self.root.iconphoto(True, self.icon)
+
 
         self.frame = tk.Frame(self.root, bg="#ffffff", bd=4, relief="groove", padx=20, pady=20)
         self.frame.place(relx=0.5, rely=0.5, anchor="center", width=340, height=400)
