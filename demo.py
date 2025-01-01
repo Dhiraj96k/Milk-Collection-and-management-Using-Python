@@ -201,8 +201,8 @@ class MilkManage:
     
     # Send OTP via email
     def send_email(self, receiver_email, otp):
-        subject = 'Your OTP Code'
-        message = f'Your OTP code is: {otp}'
+        subject = 'Milk Center'
+        message = f'Dear Customer, \n{otp} is Your one time password(otp).please do not share the otp with other.'
 
         msg = MIMEMultipart()
         msg['From'] = self.sender_email
