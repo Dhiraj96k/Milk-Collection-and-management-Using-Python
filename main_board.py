@@ -45,15 +45,15 @@ class MilkManagementApp:
             elif fat > 3.8 and snf > 8.8:
                 return 37
             else:
-                return 32  # Default rate for valid fat and SNF but not in specific subranges
+                return 32  
         elif fat < 3.0 or snf <= 8.0:
-            return 30  # Lower rate for low-quality milk
+            return 30  # Lower rate 
         else:
-            return 0  # Fallback for invalid input
+            return 0  
 
 
 
-    # Event handler for code entry change
+    # code entry change
     def on_code_entry_change(self, event=None):
         code = self.context['code_entry'].get()
         if code.isdigit():
@@ -69,7 +69,7 @@ class MilkManagementApp:
             self.clear_entry(self.context['name_entry'])
             self.clear_entry(self.context['mobno_entry'])
 
-    # Event handler to calculate total
+    #calculate total
     def calculate_total(self, event=None):
         try:
             fat = float(self.context['fat_entry'].get())
@@ -94,7 +94,7 @@ class MilkManagementApp:
             self.clear_entry(self.context['rate_entry'])
             self.clear_entry(self.context['total_entry'])
 
-    # Function to get the current time period (AM/PM)
+    # current time period (AM/PM)
     def get_time_period(self):
         current_hour = datetime.now().hour
         return "AM" if current_hour < 12 else "PM"
