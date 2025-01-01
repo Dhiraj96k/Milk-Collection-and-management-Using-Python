@@ -4,6 +4,7 @@ from tkinter import ttk
 import sqlite3
 from datetime import datetime
 import threading  # To ensure database queries do not block the GUI
+import subprocess
 
 class MilkManagementApp:
     def __init__(self, root):
@@ -21,6 +22,13 @@ class MilkManagementApp:
     def insert_into_entry(self, entry, value):
         self.clear_entry(entry)
         entry.insert(0, value)
+        
+        
+    def manage(self):
+        subprocess.Popen(["python","add-user.py"])
+    
+    def report(self):
+        subprocess.Popen(["python","pdffile.py"])
 
     # Fetch details from the database by code
     def fetch_details_by_code(self, code):
@@ -290,6 +298,12 @@ class MilkManagementApp:
         tk.Button(left_frame, text="Update", font=("Arial", 12, "bold"), bg="blue", fg="white", 
                 width=button_width, height=button_height, command=lambda: self.on_update_button_click(treeview)).grid(row=8, column=1, padx=10, pady=5, sticky="ew")
 
+        tk.Button(left_frame, text="Manage", font=("Arial", 12, "bold"), bg="green", fg="white", 
+                width=button_width, height=button_height, command=lambda: self.manage()).grid(row=9, column=0, padx=5, pady=5, sticky="ew")
+        tk.Button(left_frame, text="Report", font=("Arial", 12, "bold"), bg="blue", fg="white", 
+                width=button_width, height=button_height, command=lambda: self.report()).grid(row=9, column=1, padx=10, pady=5, sticky="ew")
+
+        
         right_frame = tk.Frame(self.root, padx=20, pady=10)
         right_frame.pack(side="right", fill="y")
 
