@@ -234,13 +234,12 @@ class MilkManage:
         screen_width = dashboard.winfo_screenwidth()
         screen_height = dashboard.winfo_screenheight()
 
-        # Set the window size (90% of the screen width and height)
-        window_width = int(screen_width * 0.9)
-        window_height = int(screen_height * 0.9)
+        window_width = int(screen_width)
+        window_height = int(screen_height)
 
         # Center the window on the screen
-        x_position = int((screen_width - window_width) / 2)
-        y_position = int((screen_height - window_height) / 2)
+        x_position = int((screen_width - window_width))
+        y_position = int((screen_height - window_height))
 
         dashboard.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
         dashboard.configure(bg="#f0f4f7")
@@ -296,7 +295,7 @@ class MilkManage:
                 messagebox.showwarning("No Data Found", "No farmer record found for the entered code.")
 
             # Milk Records Section
-            cursor.execute("SELECT liter, fat, snf, rate, amount, date, time_period FROM milk_info WHERE code = ?", (code,))
+            cursor.execute("SELECT liter, fat, snf, rate, amount, date, time_period FROM milk_info WHERE code = ? ORDER BY date DESC LIMIT 6", (code,))
             milk_records = cursor.fetchall()
 
             if milk_records:
