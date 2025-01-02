@@ -5,23 +5,19 @@ from tkcalendar import DateEntry
 from reportlab.pdfgen import canvas
 from datetime import datetime, timedelta
 
-# Function to generate the PDF
 def generate_pdf():
     code = entry_code.get().strip()  # Get the code entered by the user
     start_date = entry_start_date.get_date().strftime('%Y-%m-%d') if entry_start_date.get() else None
     end_date = entry_end_date.get_date().strftime('%Y-%m-%d') if entry_end_date.get() else None
 
-    # Default to last 15 days if no date range is provided
     if not start_date or not end_date:
         end_date = datetime.now().strftime('%Y-%m-%d')
         start_date = (datetime.now() - timedelta(days=15)).strftime('%Y-%m-%d')
 
-    # Connect to the database
     try:
-        conn = sqlite3.connect('project_database.db')  # Replace with your database file
+        conn = sqlite3.connect('project_database.db')  
         cursor = conn.cursor()
 
-        # If code is provided, fetch personal information
         if code:
             cursor.execute("SELECT name, mobno FROM per_info WHERE code = ?", (code,))
             personal_info = cursor.fetchone()
@@ -32,7 +28,6 @@ def generate_pdf():
         else:
             name, mobno = "All Records", "N/A"
 
-        # Fetch milk information for the given code and date range
         if code:
             query = """
                 SELECT code, liter, fat, snf, amount, rate, date 
@@ -61,28 +56,23 @@ def generate_pdf():
     finally:
         conn.close()
 
-    # Generate PDF file name based on current date and optional code
     current_date = datetime.now().strftime('%Y-%m-%d')
     pdf_name = f"Milk_Report_{code if code else 'All'}_{current_date}.pdf"
 
-    # Generate PDF
     try:
         pdf = canvas.Canvas(pdf_name)
 
-        # Add Title and Date/Time
         pdf.setFont("Helvetica-Bold", 16)
-        pdf.drawString(50, 800, "The Hindu Milk Center")
+        pdf.drawString(50, 800, "Kamdhenu Dhudh Sankal Kendra")
         pdf.setFont("Helvetica", 10)
         pdf.drawString(450, 800, f"Date: {datetime.now().strftime('%Y-%m-%d')}")
         pdf.drawString(450, 785, f"Time: {datetime.now().strftime('%H:%M:%S')}")
 
-        # Add Personal Info
         pdf.setFont("Helvetica-Bold", 12)
         pdf.drawString(50, 750, f"Code: {code if code else 'All'}")
         pdf.drawString(50, 730, f"Name: {name}")
         pdf.drawString(50, 710, f"Mobile: {mobno}")
 
-        # Add Milk Info Headers
         pdf.setFont("Helvetica-Bold", 10)
         headers = ["Code", "Liter", "Fat", "SNF", "Amount", "Rate", "Date"]
         x_positions = [50, 100, 150, 200, 250, 300, 350]
@@ -90,7 +80,6 @@ def generate_pdf():
         for idx, header in enumerate(headers):
             pdf.drawString(x_positions[idx], y_position, header)
 
-        # Add Milk Info Rows
         pdf.setFont("Helvetica", 10)
         y_position -= 20
         total_liter = 0
@@ -112,7 +101,7 @@ def generate_pdf():
             pdf.drawString(x_positions[6], y_position, str(date))
             y_position -= 20
 
-            if y_position < 50:  # Add a new page if space is insufficient
+            if y_position < 50:  
                 pdf.showPage()
                 y_position = 750
                 pdf.setFont("Helvetica-Bold", 10)
@@ -120,14 +109,12 @@ def generate_pdf():
                     pdf.drawString(x_positions[idx], y_position, header)
                 y_position -= 20
 
-        # Add Summary
         avg_rate = total_rate / len(milk_info) if milk_info else 0
         pdf.setFont("Helvetica-Bold", 12)
         pdf.drawString(50, y_position - 20, f"Total Liter: {total_liter}")
         pdf.drawString(50, y_position - 40, f"Total Amount: {total_amount}")
         pdf.drawString(50, y_position - 60, f"Average Rate: {avg_rate:.2f}")
 
-        # Save PDF
         pdf.save()
         messagebox.showinfo("Success", f"PDF generated successfully: {pdf_name}\nLocation: Current Directory")
     except Exception as e:
@@ -138,7 +125,7 @@ root = Tk()
 root.title("Milk Center Report Generator")
 root.geometry("400x500")
 
-Label(root, text="Milk Center Report Generator", font=("Helvetica", 16)).pack(pady=20)
+Label(root, text="Kamdhenu Dhudh Sankal Kendra Report Generator", font=("Helvetica", 16)).pack(pady=20)
 Label(root, text="Enter Code (Leave blank for all):", font=("Helvetica", 12)).pack(pady=5)
 entry_code = Entry(root, font=("Helvetica", 12))
 entry_code.pack(pady=5)

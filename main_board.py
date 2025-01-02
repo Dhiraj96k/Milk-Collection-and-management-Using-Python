@@ -253,14 +253,13 @@ class MilkManagementApp:
             if messagebox.askyesno("Exit", "Are you sure you want to exit?"):
                 self.root.destroy()
 
-    # Create the mainboard UI
     def create_mainboard(self):
         screen_width, screen_height = self.root.winfo_screenwidth(), self.root.winfo_screenheight()
         self.root.geometry(f"{screen_width}x{screen_height}")
         
         top_banner = tk.Frame(self.root, bg="yellow", height=60)
         top_banner.pack(fill="x")
-        tk.Label(top_banner, text="THE HINDU DHUDH SANKULAN KENDRA", font=("Arial", 20, "bold"), bg="yellow").pack(side="left", padx=20)
+        tk.Label(top_banner, text="Kamdhenu Dhudh Sankal Kendra", font=("Arial", 20, "bold"), bg="yellow").pack(side="left", padx=20)
         time_label = tk.Label(top_banner, font=("Arial", 12, "bold"), bg="yellow", fg="red")
         time_label.pack(side="right", padx=20)
 
